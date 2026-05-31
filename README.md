@@ -12,32 +12,26 @@
 
 ## 产品截图
 
-### 启动页
-
 ![启动页](docs/screenshots/launch-page.png)
 
-### 阅读页：对话管理
+![阅读 + 对话](docs/screenshots/reading-chat.png)
 
-![阅读页：对话管理](docs/screenshots/reading-chat.png)
-
-### 阅读页：侧边栏展开态
-
-![阅读页：侧边栏展开态](docs/screenshots/reading-sidebar-expanded.png)
+![侧边栏展开](docs/screenshots/reading-sidebar-expanded.png)
 
 ---
 
 ## 为什么做
 
-现有工具在精读论文时总差一步：
+我英语一般，但我想读懂前沿 AI 论文。
+
+试过 ChatGPT 传 PDF、IMA 翻译、Notion 问文档，翻译完就完了——译文不能划线不能做笔记，选中段落问 AI 还得复制粘贴解释背景。我需要的是**把翻译后的文本当作可以操作的阅读层**，市面上没有一个刚好对胃口的。
 
 | 工具 | 能翻译 | 能问 AI | 能在译文上标注 |
 |------|:---:|:---:|:---:|
-| **IMA** | ✅ | ✅ | ❌ 译文只是渲染层，不能高亮加粗 |
-| **Notion + PDF** | ❌ | ✅ | ❌ PDF 导入易乱，译文不是可操作文本 |
-| **ChatGPT / DeepSeek** | ❌ | ✅ | ❌ 问完还得回 PDF 阅读器做标注 |
+| **IMA** | ✅ | ✅ | ❌ 译文只是渲染层 |
+| **Notion + PDF** | ❌ | ✅ | ❌ PDF 导入易乱 |
+| **ChatGPT / DeepSeek** | ❌ | ✅ | ❌ 问完还得回 PDF 阅读器标注 |
 | **这个工具** | ✅ | ✅ | ✅ 翻译 → 阅读 → 标注 → 提问，一站完成 |
-
-核心判断：**用户真正需要操作的是译文阅读层，不是翻译后的 PDF 页面。**
 
 ---
 
@@ -54,12 +48,19 @@
 ### 3. 选区就是上下文
 
 选中任意段落，右侧 AI Chat 自动知道：
+
 - 你选中的中文译文
 - 对应英文原文
 - 所在章节标题
 - 论文标题
 
 **不用复制粘贴，不用解释背景。** 选中一段 CLIP 论文的方法描述，直接问"这段的贡献是什么"，AI 的回答会基于完整上下文。
+
+### 4. AI 不会乱编
+
+回答严格锚定在你选中的文本、论文内容和对话历史上。证据不足时直接告诉你不确定——不会用模型常识脑补作者信息、不会假装搜到了外部资料。
+
+整套策略通过版本化的 Markdown policy 文件定义（`llm/policies/`），包括证据优先级、不确定性表达、搜索触发条件、回答风格等规则，可读可改不用读代码。
 
 ---
 
@@ -98,9 +99,9 @@ npm run dev
 | 桌面壳 | Electron |
 | 前端 | React 18 + TypeScript + Vite |
 | PDF 解析 | pdfjs-dist |
-| AI 服务 | DeepSeek API（deepseek-v4-pro） |
-| LLM 编排 | 三层策略引擎（LlmHarness → DialogueManager → ToolCallingHarness） |
-| 存储 | 本地 JSON 文件（`~/Documents/PaperReadingWorkbench/`） |
+| AI 服务 | DeepSeek API |
+| LLM 策略 | 三层引擎 + 版本化 Policy 文件（`llm/policies/`） |
+| 存储 | 本地 JSON（`~/Documents/PaperReadingWorkbench/`） |
 
 ---
 
@@ -108,10 +109,10 @@ npm run dev
 
 ```
 src/          # React 前端（阅读区、Chat、标注工具栏）
-electron/     # Electron 主进程（PDF解析、翻译、AI对话编排）
-llm/          # LLM 策略与 Prompt 模板
+electron/     # Electron 主进程（PDF 解析、翻译、AI 对话编排）
+llm/          # LLM 策略与 Prompt 模板（soul.md + policies/）
 sample/       # 测试用论文 PDF
-SPEC/         # 设计规格文档
+docs/         # 截图与设计文档
 ```
 
 ---
