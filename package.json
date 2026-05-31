@@ -1,0 +1,41 @@
+{
+  "name": "paper-reading-workbench",
+  "version": "0.1.0",
+  "description": "论文精读工作台 - 英文论文翻译、标注与 AI 对话",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "typecheck:electron": "tsc -p tsconfig.electron.json",
+    "test:parser": "node tests/test_parse_clip.js",
+    "test:health": "node tests/test_health.js",
+    "test": "npm run typecheck && npm run typecheck:electron && npm run test:parser && npm run test:health",
+    "electron:dev": "concurrently \"vite\" \"wait-on tcp:5173 && tsc -p tsconfig.electron.json && VITE_DEV_SERVER_URL=http://localhost:5173 electron .\"",
+    "electron:build": "npm run build && tsc -p tsconfig.electron.json && electron-builder"
+  },
+  "dependencies": {
+    "pdfjs-dist": "4.0.379",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "@vitejs/plugin-react": "^4.2.1",
+    "concurrently": "^8.2.2",
+    "electron": "^28.1.4",
+    "electron-builder": "^24.9.1",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.12",
+    "wait-on": "^7.2.0"
+  },
+  "build": {
+    "appId": "com.paper-reading.workbench",
+    "productName": "论文精读工作台",
+    "mac": {
+      "target": "dmg"
+    }
+  }
+}
