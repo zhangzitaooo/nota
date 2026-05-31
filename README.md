@@ -1,6 +1,5 @@
 # 论文精读工作台
 
-开发实现计划见 [IMPLEMENTATION.md](./IMPLEMENTATION.md)。
 
 ## 一句话定位
 
