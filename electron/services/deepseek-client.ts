@@ -12,9 +12,14 @@ export interface DeepSeekToolCall {
   };
 }
 
+// OpenAI Vision 兼容的内容块类型
+export type DeepSeekContentPart =
+  | { type: 'text'; text: string }
+  | { type: 'image_url'; image_url: { url: string; detail?: string } };
+
 export interface DeepSeekMessage {
   role: 'system' | 'user' | 'assistant' | 'tool';
-  content?: string | null;
+  content?: string | null | DeepSeekContentPart[];
   tool_call_id?: string;
   tool_calls?: DeepSeekToolCall[];
 }
@@ -140,6 +145,45 @@ ${context.enBlock}
     return message.content || '';
   }
 
+  /**
+   * 清洗消息：将 image_url 等多模态内容块剥离，转换为纯文本格式。
+   * 对于不支持多模态的模型（如 deepseek-v4-pro），这是必需的。
+   *
+   * 行为：
+   * - 纯字符串 content → 原样保留
+   * - 混合 content 数组 → 提取所有 text 块拼接，image_url 块替换为 "[图片]" 占位
+   */
+  private sanitizeMessages(messages: DeepSeekMessage[]): DeepSeekMessage[] {
+    return messages.map((msg) => {
+      const content = msg.content;
+      if (typeof content === 'string' || content === null || content === undefined) {
+        return msg;
+      }
+      if (!Array.isArray(content)) {
+        return msg;
+      }
+
+      const textParts: string[] = [];
+      let imageCount = 0;
+      for (const part of content) {
+        if (part.type === 'text') {
+          textParts.push(part.text);
+        } else if (part.type === 'image_url') {
+          imageCount++;
+        }
+      }
+
+      // 如果有图片被剥离，在末尾追加提示
+      if (imageCount > 0) {
+        textParts.push(
+          `\n[系统提示：此消息包含 ${imageCount} 张图片，当前模型不支持视觉输入，图片内容已跳过]`
+        );
+      }
+
+      return { ...msg, content: textParts.join('\n') || null };
+    });
+  }
+
   private async callChatCompletion(
     messages: DeepSeekMessage[],
     tools?: ToolDefinition[]
@@ -148,9 +192,11 @@ ${context.enBlock}
       throw new Error('DeepSeek API key 未配置。请在 .env.local 中设置 DEEPSEEK_API_KEY。');
     }
 
+    const sanitizedMessages = this.sanitizeMessages(messages);
+
     const body: Record<string, unknown> = {
       model: 'deepseek-v4-pro',
-      messages,
+      messages: sanitizedMessages,
       temperature: 0.3,
       max_tokens: 4096,
     };
