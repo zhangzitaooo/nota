@@ -1,3 +1,5 @@
+
+
 # 论文精读工作台
 
 <p align="center">
@@ -79,7 +81,7 @@ git clone https://github.com/zhangzitaooo/paper-reading-workbench.git
 cd paper-reading-workbench
 npm install
 echo "DEEPSEEK_API_KEY=你的API-Key" > .env.local
-npm run dev
+npm run electron:dev
 ```
 
 ### 使用流程
