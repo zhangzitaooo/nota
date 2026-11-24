@@ -32,7 +32,10 @@ nav a:hover, .source-stage header a:hover, .get-links a:not(.primary):hover {tex
 .hero h1 span, .hero h1 em {display:inline-block}
 .hero em {font-style:normal;color:#697c71}
 .hero p {font-size:clamp(16px,1.22vw,19px);color:var(--muted);margin:24px auto;line-height:1.8}
+.hero-actions {display:flex;justify-content:center;align-items:center;gap:8px 20px;flex-wrap:wrap}
 .hero .primary {padding:12px 22px}
+.hero-sample {display:inline-flex;align-items:center;gap:7px;min-height:44px;color:var(--muted)}
+.hero-sample:hover {text-decoration:underline;text-underline-offset:4px}
 .feature {scroll-margin-top:24px}
 .comparison {display:grid;grid-template-columns:minmax(0,.78fr) minmax(0,1.25fr);gap:18px}
 .stage, .source-stage {min-width:0;border-radius:25px}
