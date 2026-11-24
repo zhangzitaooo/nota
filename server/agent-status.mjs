@@ -30,12 +30,12 @@ export async function agentStatus(binary = process.env.CODEX_BIN || "codex") {
 
 export const agentProviders = [
   { id: 'builtin', name: 'Nota Agent', supported: true, builtin: true },
-  { id: 'codex', name: 'Codex', supported: true, guide: 'https://openai.com/codex/' },
-  { id: 'claude', name: 'Claude Code', supported: true, guide: 'https://claude.com/product/claude-code' },
-  { id: 'antigravity', name: 'Antigravity CLI', supported: false, guide: 'https://antigravity.google/docs/cli/' },
+  { id: 'codex', name: 'Codex', supported: true, guide: 'https://developers.openai.com/codex/cli' },
+  { id: 'claude', name: 'Claude Code', supported: true, guide: 'https://code.claude.com/docs/en/quickstart' },
+  { id: 'antigravity', name: 'Antigravity CLI', supported: false, guide: 'https://antigravity.google/docs/getting-started?tab=cli' },
   { id: 'workbuddy', name: 'WorkBuddy', supported: true, guide: 'https://www.codebuddy.cn/work/' },
   { id: 'deepseek', name: 'DeepSeek Harness', supported: false, guide: 'https://deepseek.com/harness/' },
-  { id: 'opencode', name: 'OpenCode', supported: false, guide: 'https://opencode.ai/' },
+  { id: 'opencode', name: 'OpenCode', supported: false, guide: 'https://opencode.ai/docs/' },
 ];
 export async function providerStatus(id, dataDir) {
   if (id === 'builtin') return builtinStatus(dataDir);

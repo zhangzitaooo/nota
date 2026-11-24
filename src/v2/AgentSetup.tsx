@@ -75,7 +75,7 @@ export function AgentSetup({ state, onClose, onConnected }: {
           {status && <span>{status}</span>}</span>
         <span className="agent-choice-indicator">{selected === a.id && <Icon name="check" size={17} />}</span>
       </button>
-        {!checking && !a.error && a.supported && a.installed === false && a.guide && <a className="agent-guide" href={a.guide} target="_blank" rel="noopener noreferrer" aria-label={`${a.name} 接入说明（打开官网）`}>接入说明<Icon name="source" size={12} /></a>}
+        {!checking && !a.error && a.installed === false && a.guide && <a className="agent-guide" href={a.guide} target="_blank" rel="noopener noreferrer" aria-label={`${a.name} 安装指引（打开官网）`}>安装指引<Icon name="source" size={12} /></a>}
       </div>;
   }
   return <Modal title="设置" className="settings-modal" busy={saving} onClose={onClose}>

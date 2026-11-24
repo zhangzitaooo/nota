@@ -6,9 +6,9 @@
 
 ## 快速开始
 
-[下载 Nota 0.2.0 · macOS Apple Silicon](https://github.com/zhangzitaooo/paper-reading-workbench/releases/download/v0.2.0/Nota-0.2.0-macOS-arm64.dmg)。打开磁盘映像，将 Nota 拖入「应用程序」。此构建使用本地临时签名，未获 Apple 开发者签名或公证。
+[下载 Nota 0.2.1 · macOS Apple Silicon](https://github.com/zhangzitaooo/paper-reading-workbench/releases/download/v0.2.1/Nota-0.2.1-macOS-arm64.dmg)。打开磁盘映像，将 Nota 拖入「应用程序」。此构建使用本地临时签名，未获 Apple 开发者签名或公证。
 
-首次启动默认选中 Nota Agent。使用内置服务需要单独开通，未授权时设置页显示「暂未开通」。也可以在设置中选择本机 Agent。未安装的 Codex、Claude Code 和 WorkBuddy 均提供「接入说明」。WorkBuddy 使用桌面应用中已配置的自定义模型。Antigravity CLI 已单独验证原生会话，目前仅在设置中检测安装状态。
+首次启动默认选中 Nota Agent。使用内置服务需要单独开通，未授权时设置页显示「暂未开通」。也可以在设置中选择本机 Agent。未安装的本机 Agent 旁有「安装指引」，安装完成后可点击「重新检测」。标记为「待接入」的 Agent 目前仅支持安装检测。WorkBuddy 使用桌面应用中已配置的自定义模型。Antigravity CLI 已单独验证原生会话，目前仅在设置中检测安装状态。
 
 ### 从源码启动
 
@@ -88,7 +88,7 @@ npm run build
 
 ## 当前边界
 
-0.2.0 提供 Apple Silicon 安装包。
+0.2.1 提供 Apple Silicon 安装包。
 
 - PDF 最多 30MB、500 页；单页压缩后超过 10MB 会明确失败。OXR 是远程服务，PDF 会上传；不是在 Mac 本地运行 OXR 模型。
 - 翻译和讨论使用所选 Agent 的模型服务。点击翻译才启动翻译任务，展开侧栏本身不会发消息。
