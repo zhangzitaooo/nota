@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Nota · 把论文读懂，把思考留下</title>
 <meta name="description" content="Nota 是一款 macOS 论文阅读工作台，上传 PDF 或粘贴论文链接即可翻译，保留章节、图表与公式，在同一阅读面板批注并向内置或本机 Agent 提问。">
-<link rel="icon" href="assets/nota.png"><link rel="stylesheet" href="site.css?v=d5064f9451"><script defer src="site.js?v=a431bfc3ef"></script>
+<link rel="icon" href="assets/nota.png"><link rel="stylesheet" href="site.css?v=95c7e8f08d"><script defer src="site.js?v=a431bfc3ef"></script>
 </head>
 <body>
 <header class="top">
@@ -75,7 +75,7 @@
 <section class="feature" id="agents" aria-labelledby="agents-title">
 <div class="feature-copy">
   <h2 id="agents-title">用你熟悉的 Agent</h2>
-  <p>内置 Nota Agent 基于 DeepSeek Harness，可以回看论文段落和图表。也可以接入 Mac 上的 Codex、Claude Code 或 WorkBuddy。</p>
+  <p>读论文时，可以问内置的 Nota Agent，也可以在设置里选择 Mac 上的 Codex、Claude Code 或 WorkBuddy。</p>
 </div>
 <div class="stage agents" aria-label="Agent 接入方式示意">
 
@@ -85,9 +85,9 @@
     <button data-group="provider" data-value="claude" aria-pressed="false"><img src="assets/claude.png" alt="">Claude Code</button>
   </div>
   <div class="agent-detail" aria-live="polite">
-    <div data-provider="nota"><h3>内置阅读助手</h3><p>Nota 的阅读 Harness 将当前问题、选文和论文工具交给 Agent，让它能回到图 1 查找依据。</p><small>内置服务需开通</small></div>
-    <div data-provider="codex" hidden><h3>使用本机 Codex</h3><p>在 Mac 上登录 Codex CLI 后，可以直接从 Nota 提问。当前选文会随问题带入对话。</p><small>通过本机 Codex CLI 接入</small></div>
-    <div data-provider="claude" hidden><h3>使用本机 Claude Code</h3><p>在 Mac 上登录 Claude Code 后，选中论文中的段落，就能在阅读侧栏里继续和它讨论。</p><small>通过本机 Claude Code 接入</small></div>
+    <div data-provider="nota"><h3>让内置助手帮你读图</h3><p>读 CLIP 时，可以问「图 1 里蓝色的格子代表什么？」Nota Agent 可以查看这张图，结合图注解释给你听。</p></div>
+    <div data-provider="codex" hidden><h3>把选中的原文发给 Codex</h3><p>在 Mac 上登录 Codex CLI 后，选中论文里的一句话，在 Nota 侧栏问「这句话是什么意思？」Codex 会一起收到你的问题和原句。</p></div>
+    <div data-provider="claude" hidden><h3>和 Claude Code 接着聊</h3><p>在 Mac 上登录 Claude Code 后，就能在 Nota 里和它讨论论文。读完它的解释，还可以在同一段对话里追问「能举个例子吗？」</p></div>
   </div></div>
 </div></section>
 </div>

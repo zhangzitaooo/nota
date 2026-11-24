@@ -45,7 +45,7 @@ nav a:hover, .source-stage header a:hover, .get-links a:not(.primary):hover {tex
 }
 .source-stage header, .translation .demo-toolbar {min-height:38px;margin-bottom:24px}
 .source-stage header strong, .demo-toolbar > span {font-size:16px;font-weight:650}
-.source-stage header a, .running-head span, .credit, .agent-detail small {font-size:12px;color:var(--muted)}
+.source-stage header a, .running-head span, .credit {font-size:12px;color:var(--muted)}
 .source-page {position:relative;display:block;flex:1;min-height:0}
 .source-page img {
   position:absolute;top:0;left:0;width:100%;height:auto;
@@ -102,7 +102,6 @@ h2 {font-size:clamp(30px,3vw,48px);line-height:1.2;letter-spacing:-.055em}
 .agent-picker img {width:20px;height:20px;object-fit:contain}
 .agent-detail {display:grid;margin-top:28px}
 .agent-detail h3 {font-size:21px}
-.agent-detail small {display:block;margin-top:12px}
 .get {background:#f4f5f0;border-radius:23px;padding:clamp(25px,4vw,60px);display:flex;align-items:center;justify-content:space-between;gap:28px}
 .get-links {gap:19px;font-size:14px;flex-shrink:0}
 footer {padding-block:34px}
