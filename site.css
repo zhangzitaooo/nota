@@ -106,8 +106,10 @@ h2 {font-size:clamp(30px,3vw,48px);line-height:1.2;letter-spacing:-.055em}
 .get-links {gap:19px;font-size:14px;flex-shrink:0}
 footer {padding-block:34px}
 footer .brand {font-size:25px}
-footer nav a {display:inline-flex;align-items:center;gap:6px}
-footer nav img {width:22px;height:22px}
+footer nav {gap:4px}
+footer nav a {display:grid;place-items:center;width:44px;height:44px;border-radius:10px}
+footer nav a:hover, footer nav a:focus-visible {background:#f2f4f2}
+footer nav img, footer nav svg {display:block;width:24px;height:24px}
 @media(max-width:800px) {
   main,.top,footer {width:calc(100% - 40px)}
   .comparison {grid-template-columns:minmax(0,.55fr) minmax(0,1fr);gap:10px}
