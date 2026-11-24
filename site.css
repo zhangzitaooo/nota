@@ -143,8 +143,6 @@ footer nav img {width:22px;height:22px}
 }
 @media(prefers-reduced-motion:no-preference) {
   .primary,button {transition:background-color .16s ease,color .16s ease}
-  .hero .primary span {transition:transform .18s ease}
-  .hero .primary:hover span {transform:translateY(2px)}
 }
 @media(max-width:355px) {
   .translation .demo-toolbar {align-items:flex-start;flex-direction:column;gap:6px}
