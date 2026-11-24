@@ -7,8 +7,10 @@ for (const group of document.querySelectorAll('[role="group"]')) {
       for (const choice of buttons) {
         choice.setAttribute("aria-pressed", String(choice === button));
       }
+      const bilingual = key === "language" && value === "both";
+      if (key === "language") stage.classList.toggle("bilingual", bilingual);
       for (const panel of stage.querySelectorAll("[data-" + key + "]")) {
-        panel.hidden = panel.dataset[key] !== value;
+        panel.hidden = !bilingual && panel.dataset[key] !== value;
       }
     });
   }

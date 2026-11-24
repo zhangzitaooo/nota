@@ -7,15 +7,18 @@
 <link rel="icon" href="assets/nota.png"><link rel="stylesheet" href="site.css"><script defer src="site.js"></script>
 </head>
 <body>
-<header class="top"><a class="brand" href="#top" aria-label="Nota 首页"><img src="assets/nota.png" alt="">Nota</a><nav aria-label="主导航"><a href="#inside">阅读体验</a><a href="#get">获取 Nota <span aria-hidden="true">↗</span></a></nav></header>
+<header class="top"><a class="brand" href="#top" aria-label="Nota 首页"><img src="assets/nota.png" alt="">Nota</a><nav aria-label="主导航"><a href="#inside">论文翻译</a><a class="desktop-link" href="#notes">批注与追问</a><a class="desktop-link" href="#agents">Agent</a><a href="#get">获取 Nota <span aria-hidden="true">↗</span></a></nav></header>
 <main id="top">
 <section class="hero">
-<div class="hero-copy"><h1>把英文论文，<br>翻成<em>读得懂的中文</em>。</h1>
-<p>上传 PDF，或贴入 PDF、arXiv 链接。Nota 按论文结构翻译，公式和图表随文保留。你可以边读边写批注，直接引用原句问 Agent。</p>
-<a class="primary" href="#inside">用一篇论文看效果 <span aria-hidden="true">↓</span></a></div>
-<div class="desk" role="img" aria-label="摊开的 CLIP 论文首页和 Nota 的折角小纸人">
-<div class="sheet-back"></div><img class="paper" src="assets/clip.jpg" width="800" height="1040" alt=""><span class="tab"></span>
-<div class="pencil-note"><span>读到这里</span><img src="assets/nota.png" alt=""></div>
+<div class="hero-copy"><h1>读英文论文，<br>从<em>中文版</em>开始。</h1>
+<p>把 PDF 或论文链接交给 Nota。用中文读原文里的图表和公式，遇到疑问，在页边写下来，或直接问 Agent。</p>
+<a class="primary" href="#inside">试读一段 CLIP <span aria-hidden="true">↓</span></a></div>
+<div class="desk" role="img" aria-label="CLIP 英文论文首页前叠着中文译稿，可以对照标题、作者和摘要">
+<div class="sheet-back"></div><img class="paper" src="assets/clip.jpg" width="800" height="1040" alt="">
+<div class="proof"><div class="proof-head">CLIP <span>中文译稿</span></div>
+<strong>从自然语言监督中学习<br>可迁移的视觉模型</strong>
+<small>Alec Radford 等 · 2021</small>
+<div class="proof-abstract"><b>摘要</b><p>直接从图像的文字描述中学习，为训练视觉模型提供了更丰富的监督信号。</p></div></div>
 </div></section>
 <section class="feature" id="inside" aria-labelledby="translation-title">
 <div class="feature-copy">
@@ -24,23 +27,33 @@
   <a class="paper-credit" href="https://arxiv.org/abs/2103.00020">示例论文 · CLIP ↗</a>
 </div>
 <div class="stage translation" aria-label="翻译排版示意">
-  <div class="demo-toolbar"><span>CLIP · 图 1 节选</span>
+  <div class="demo-toolbar"><span>CLIP · 双语试读</span>
     <div class="switch" role="group" aria-label="示例语言">
-      <button data-group="language" data-value="zh" aria-pressed="true">中文</button><button data-group="language" data-value="en" aria-pressed="false">English</button>
+      <button data-group="language" data-value="zh" aria-pressed="true">中文</button><button data-group="language" data-value="both" aria-pressed="false">中英对照</button><button data-group="language" data-value="en" aria-pressed="false">English</button>
     </div>
   </div>
   <article class="sample-paper">
-    <h3 data-language="zh">图像与文本如何配对？</h3>
-    <h3 data-language="en" lang="en" hidden>How are images paired with text?</h3>
-    <figure><img width="729" height="516" src="assets/clip-pretraining.png" alt="CLIP 图 1 的对比预训练示意，图像和文本分别编码，对角线上的元素对应原始图文对。">
-    <figcaption data-language="zh"><b>图 1</b>　CLIP 联合训练一个图像编码器和一个文本编码器，以预测一批图文训练样本中的正确配对。</figcaption>
-    <figcaption data-language="en" lang="en" hidden><b>Fig. 1</b>　… CLIP jointly trains an image encoder and a text encoder to predict the correct pairings of a batch of (image, text) training examples.</figcaption></figure>
+    <header class="running-head"><b>CLIP</b><span>Radford et al. · 2021</span></header>
+    <div class="parallel">
+      <div data-language="zh"><h3>图像与文本如何配对？</h3><p>给定一批 <i>N</i> 个图文对，CLIP 分别对图像和文本编码。每张图像都要与每段文本比较，由此得到图 1 中的 <i>N</i> × <i>N</i> 相似度矩阵。</p></div>
+      <div data-language="en" lang="en" hidden><h3>How are images paired with text?</h3><p>CLIP encodes a batch of <i>N</i> images and their captions separately. Comparing each image with every caption gives the <i>N</i> × <i>N</i> similarity matrix in Figure 1.</p></div>
+    </div>
+    <figure><img width="732" height="525" src="assets/clip-pretraining.png" alt="两组编码器连接到相似度矩阵，蓝色对角线标出原始图文对。">
+    <figcaption class="parallel">
+      <span data-language="zh"><b>图 1（局部）</b> 对比预训练。蓝色方格标出了每张图像与其原始描述的配对。</span>
+      <span data-language="en" lang="en" hidden><b>Fig. 1 (detail)</b> Contrastive pre-training. Each blue cell pairs an image with its original caption.</span>
+    </figcaption></figure>
+    <div class="parallel paper-tail">
+      <p data-language="zh">矩阵的对角线上有 <i>N</i> 个正确配对，其余 <i>N</i><sup>2</sup> − <i>N</i> 个组合都是负例。训练时，模型提高正确配对的相似度，同时降低负例的相似度。</p>
+      <p data-language="en" lang="en" hidden>The diagonal contains the <i>N</i> matching pairs. The other <i>N</i><sup>2</sup> − <i>N</i> combinations are negatives. Training raises the similarity of the matched pairs and lowers it for the negatives.</p>
+    </div>
   </article>
-  <small class="credit">图与英文图注节选自 Radford 等人的 CLIP 论文，第 2 页。</small>
+  <small class="credit">插图取自 CLIP 图 1，示例正文据第 2.3 节改写。</small>
 </div>
 </section>
 
-<section class="feature" aria-labelledby="notes-title">
+<div class="companion-demos">
+<section class="feature" id="notes" aria-labelledby="notes-title">
 <div class="feature-copy">
   <h2 id="notes-title">读到哪一句，<br>就在哪一句讨论。</h2>
   <p>划选译文，在页边留批注，或把这句加入对话。再选一段也能一起问，正文和讨论始终在同一个阅读面板里。</p>
@@ -63,10 +76,10 @@
   </aside></div>
 </div></section>
 
-<section class="feature" aria-labelledby="agents-title">
+<section class="feature" id="agents" aria-labelledby="agents-title">
 <div class="feature-copy">
   <h2 id="agents-title">带着原文，<br>问你惯用的 Agent。</h2>
-  <p>内置 Nota Agent 使用我们为论文阅读搭建的 Agent Harness，能按需查看选文对应的段落和图表。也可以接入 Mac 上已安装并登录的 Codex 或 Claude Code。</p>
+  <p>Nota 自研的 Agent Harness 能带着你的问题回看段落和图表。习惯用 Codex 或 Claude Code？也可以接入 Mac 上已登录的客户端。</p>
 </div>
 <div class="stage agents" aria-label="Agent 接入方式示意">
   <div class="demo-toolbar"><span>Agent 接入示意</span></div>
@@ -81,6 +94,7 @@
     <div data-provider="claude" hidden><h3>使用本机 Claude Code</h3><p>在 Mac 上登录 Claude Code 后，选中论文中的段落，就能在阅读侧栏里继续和它讨论。</p><small>通过本机 Claude Code 接入</small></div>
   </div></div>
 </div></section>
+</div>
 <section id="get" class="get"><div><h2>获取 Nota</h2><p>新版 macOS 安装包尚未发布。你可以先查看公开源码的安装说明。</p></div><div class="get-links"><a class="primary" href="https://github.com/zhangzitaooo/paper-reading-workbench#快速开始">源码安装说明 ↗</a><a href="https://github.com/zhangzitaooo/paper-reading-workbench/releases">发布记录 ↗</a></div></section>
 </main><footer><a class="brand" href="#top">Nota</a><nav aria-label="联系作者"><a href="https://www.xiaohongshu.com/user/profile/6034a0a50000000001007e43"><img src="assets/xiaohongshu.svg" alt="">小红书</a><a href="mailto:zhangzitao997@gmail.com">邮件反馈 ↗</a></nav></footer>
 </body></html>
