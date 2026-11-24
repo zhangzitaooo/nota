@@ -4,7 +4,7 @@
 
 [下载 macOS 版](https://zhangzitaooo.github.io/nota/#get) · [在线试读一篇论文](https://zhangzitaooo.github.io/nota/#inside)
 
-![在 Nota 阅读器中查看论文和侧栏讨论](docs/screenshots/reading-chat.png)
+![Nota 阅读器中的中文译文、章节目录和中英对照切换](https://zhangzitaooo.github.io/nota/assets/read.webp)
 
 ## 从第一篇论文开始
 
