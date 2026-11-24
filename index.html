@@ -4,30 +4,23 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Nota · 把论文读懂，把思考留下</title>
 <meta name="description" content="Nota 是一款 macOS 论文阅读工作台，上传 PDF 或粘贴论文链接即可翻译，保留章节、图表与公式，在同一阅读面板批注并向内置或本机 Agent 提问。">
-<link rel="icon" href="assets/nota.png"><link rel="stylesheet" href="site.css"><script defer src="site.js"></script>
+<link rel="icon" href="assets/nota.png"><link rel="stylesheet" href="site.css?v=df0b193544"><script defer src="site.js?v=a431bfc3ef"></script>
 </head>
 <body>
 <header class="top"><a class="brand" href="#top" aria-label="Nota 首页"><img src="assets/nota.png" alt="">Nota</a><nav aria-label="主导航"><a href="#inside">论文翻译</a><a class="desktop-link" href="#notes">批注与追问</a><a class="desktop-link" href="#agents">Agent</a><a href="#get">获取 Nota <span aria-hidden="true">↗</span></a></nav></header>
 <main id="top">
-<section class="hero">
-<div class="hero-copy"><h1>读英文论文，<br>从<em>中文版</em>开始。</h1>
-<p>把 PDF 或论文链接交给 Nota。用中文读原文里的图表和公式，遇到疑问，在页边写下来，或直接问 Agent。</p>
-<a class="primary" href="#inside">试读一段 CLIP <span aria-hidden="true">↓</span></a></div>
-<div class="desk" role="img" aria-label="CLIP 英文论文首页前叠着中文译稿，可以对照标题、作者和摘要">
-<div class="sheet-back"></div><img class="paper" src="assets/clip.jpg" width="800" height="1040" alt="">
-<div class="proof"><div class="proof-head">CLIP <span>中文译稿</span></div>
-<strong>从自然语言监督中学习<br>可迁移的视觉模型</strong>
-<small>Alec Radford 等 · 2021</small>
-<div class="proof-abstract"><b>摘要</b><p>直接从图像的文字描述中学习，为训练视觉模型提供了更丰富的监督信号。</p></div></div>
-</div></section>
-<section class="feature" id="inside" aria-labelledby="translation-title">
-<div class="feature-copy">
-  <h2 id="translation-title">译成中文，<br>保留论文的结构。</h2>
-  <p>章节、段落和图注按原文顺序展开，公式保留数学排版。遇到一个拿不准的术语，切回原文就能核对。</p>
-  <a class="paper-credit" href="https://arxiv.org/abs/2103.00020">示例论文 · CLIP ↗</a>
-</div>
+<section class="hero" aria-labelledby="hero-title">
+  <h1 id="hero-title"><span>英文论文，</span><em>中文读。</em></h1>
+  <p>上传 PDF 或粘贴论文链接，按原文排版读译文。<br>在段落旁写批注，带着原句问 Agent。</p>
+  <a class="primary" href="#inside">试读一篇论文 <span aria-hidden="true">↓</span></a>
+</section>
+<section class="feature comparison" id="inside" aria-label="CLIP 原文和译文试读">
+  <div class="source-stage">
+    <header><strong>英文原稿</strong><a href="https://arxiv.org/pdf/2103.00020#page=2">打开 PDF ↗</a></header>
+    <a class="source-page" href="https://arxiv.org/pdf/2103.00020#page=2" aria-label="查看 CLIP 第 2 页原文"><img src="assets/clip-page-2.jpg" width="871" height="1160" alt="CLIP 第 2 页，上方是模型图和图注，下方为双栏正文"></a>
+  </div>
 <div class="stage translation" aria-label="翻译排版示意">
-  <div class="demo-toolbar"><span>CLIP · 双语试读</span>
+  <div class="demo-toolbar"><span>Nota 译文</span>
     <div class="switch" role="group" aria-label="示例语言">
       <button data-group="language" data-value="zh" aria-pressed="true">中文</button><button data-group="language" data-value="both" aria-pressed="false">中英对照</button><button data-group="language" data-value="en" aria-pressed="false">English</button>
     </div>
@@ -52,14 +45,14 @@
 </div>
 </section>
 
-<div class="companion-demos">
+<div class="cases">
 <section class="feature" id="notes" aria-labelledby="notes-title">
 <div class="feature-copy">
-  <h2 id="notes-title">读到哪一句，<br>就在哪一句讨论。</h2>
-  <p>划选译文，在页边留批注，或把这句加入对话。再选一段也能一起问，正文和讨论始终在同一个阅读面板里。</p>
+  <h2 id="notes-title">在原句旁追问</h2>
+  <p>选中读不懂的一句，留下自己的理解，或请 Agent 解释。讨论跟着选文走。</p>
 </div>
 <div class="stage reading" aria-label="批注和追问交互示意">
-  <div class="demo-toolbar"><span>CLIP · 阅读面板示意</span>
+  <div class="demo-toolbar"><span>CLIP · 页边批注</span>
     <div class="switch" role="group" aria-label="选文操作">
       <button data-group="action" data-value="note" aria-pressed="true">写批注</button><button data-group="action" data-value="ask" aria-pressed="false">问 Agent</button>
     </div>
@@ -67,10 +60,10 @@
   <div class="spread"><article class="passage"><h3>对比预训练</h3>
     <p>给定一批 <i>N</i> 个图文对，模型会计算所有图像与所有文本之间的相似度。</p>
     <p>在 <i>N</i> × <i>N</i> 个组合里，<mark>对角线上的图像和文本是原始配对</mark>。</p>
-    <small>据 CLIP 图 1 改写</small>
+
   </article><aside class="margin">
     <div data-action="note"><div class="margin-heading"><span class="note-dot"></span>我的批注</div>
-      <p>原来图里的蓝色方格是配对关系！每一行都是同一张图在和不同文本比较。</p></div>
+      <p>记住这个读法：沿着一行看，就是同一张图与不同描述的相似度。</p></div>
     <div data-action="ask" hidden><div class="margin-heading"><img src="assets/nota.png" alt="">Nota Agent</div>
       <p class="question">为什么看对角线？</p><p>图像和文本按配对顺序排列，所以第 <i>i</i> 张图对应第 <i>i</i> 段文本。</p></div>
   </aside></div>
@@ -78,11 +71,11 @@
 
 <section class="feature" id="agents" aria-labelledby="agents-title">
 <div class="feature-copy">
-  <h2 id="agents-title">带着原文，<br>问你惯用的 Agent。</h2>
-  <p>Nota 自研的 Agent Harness 能带着你的问题回看段落和图表。习惯用 Codex 或 Claude Code？也可以接入 Mac 上已登录的客户端。</p>
+  <h2 id="agents-title">用你熟悉的 Agent</h2>
+  <p>内置 Nota Agent 的自研 Harness 可以回看论文段落和图表。也可以接入你在 Mac 上已登录的 Codex 或 Claude Code。</p>
 </div>
 <div class="stage agents" aria-label="Agent 接入方式示意">
-  <div class="demo-toolbar"><span>Agent 接入示意</span></div>
+
   <div class="agent-sheet"><div class="agent-picker" role="group" aria-label="查看 Agent 接入方式">
     <button data-group="provider" data-value="nota" aria-pressed="true"><img src="assets/nota.png" alt="">Nota Agent</button>
     <button data-group="provider" data-value="codex" aria-pressed="false"><img src="assets/codex.png" alt="">Codex</button>
