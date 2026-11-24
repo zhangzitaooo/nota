@@ -2,7 +2,7 @@
 
 ## 从源码启动
 
-需要 macOS、Node.js 22+、Python 3.9+。要使用外部 Agent，请另行配置上述任意一款已接入的 Agent。桌面服务和 DeepSeek Harness 使用随项目安装的 Node 24。Nota Agent 未配置共享服务时显示暂未开通。
+需要 macOS、Node.js 22+、Python 3.9+。要使用外部 Agent，请另行配置上述任意一款已接入的 Agent。桌面服务和 DeepSeek Harness 使用随项目安装的 Node 24。全新安装默认使用内置 Nota Agent 的公开限额试用。
 
 ```sh
 npm ci
@@ -78,7 +78,7 @@ npm run build
 
 ## 当前边界
 
-0.2.1 提供 Apple Silicon 安装包。
+0.2.2 提供 Apple Silicon 安装包。
 
 - PDF 最多 30MB、500 页；单页压缩后超过 10MB 会明确失败。OXR 是远程服务，PDF 会上传；不是在 Mac 本地运行 OXR 模型。
 - 翻译和讨论使用所选 Agent 的模型服务。点击翻译才启动翻译任务，展开侧栏本身不会发消息。
@@ -91,4 +91,4 @@ MIT。OXR API/模型本身的服务条款和许可证独立于本仓库。
 
 ## Nota Agent 服务
 
-固定使用 DeepSeek V4.1 Flash，界面显示「限时免费」，不提供 Pro 或用户 API Key 表单。共享 Key 只在独立网关保存；客户端持有可撤销、有期限和独立额度的访问令牌。网关限制模型、输出、并发、频率和每日用量，并支持 SSE 转发。已部署仅供当前本机使用的私有网关，并验证真实 Flash、工具调用、流式回答和会话恢复；其他安装需单独授权。云端使用 D1 事务维护额度并设置累计调用熔断。详见 [网关配置](docs/design/nota-agent-gateway.md)。
+固定使用 DeepSeek V4.1 Flash，界面显示「限时免费」，不提供 Pro 或用户 API Key 表单。共享 Key 只在独立网关保存；每个试用安装持有独立随机凭据。网关限制模型、输出、并发、频率和每日用量，并支持 SSE 转发。新安装免登录试用，网关通过 D1 事务执行共享额度限制。详见 [网关配置](design/nota-agent-gateway.md)。

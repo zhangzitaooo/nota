@@ -5,9 +5,26 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, symlinkSyn
 import { tmpdir, homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { prepareEnvironment, turnContext, callPaperTool } from '../server/paper-environment.mjs';
-import { chooseConfig } from '../server/agent-config.mjs';
+import { chooseConfig, builtinConnection } from '../server/agent-config.mjs';
 import { ApprovalBroker } from '../server/approval-broker.mjs';
 import { DeepSeekRuntime } from '../server/deepseek.mjs';
+
+test('fresh installations have independent, persistent public trial credentials', async (t) => {
+  const dir = mkdtempSync(join(tmpdir(), 'nota-trial-test-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const previous = process.env.NOTA_AGENT_GATEWAY_URL;
+  delete process.env.NOTA_AGENT_GATEWAY_URL;
+  try {
+    const first = await builtinConnection(join(dir, 'first'));
+    assert.equal(first.baseURL, 'https://nota-agent-gateway.zhangzitao997.chatgpt.site/anthropic');
+    assert.equal(first.serviceToken, '');
+    assert.match(first.token, /^nota-trial-v1-[a-f0-9]{64}$/);
+    assert.equal((await builtinConnection(join(dir, 'first'))).token, first.token);
+    assert.notEqual((await builtinConnection(join(dir, 'second'))).token, first.token);
+  } finally {
+    if (previous !== undefined) process.env.NOTA_AGENT_GATEWAY_URL = previous;
+  }
+});
 
 const paper = { id: 'paper-runtime-test', version: 2, title: 'Accuracy comparison', pages: [1, 2], blocks: [
   { id: 'p1-b0', type: 'Text', page: 1, text: 'Model A: 80%. Model B: 75%.' },

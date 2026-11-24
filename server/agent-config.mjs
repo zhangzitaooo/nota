@@ -1,5 +1,6 @@
 import { inspectWorkBuddy } from './workbuddy.mjs';
-import { existsSync, readFileSync } from 'node:fs';
+import { randomBytes } from 'node:crypto';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, linkSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFile } from 'node:child_process';
@@ -10,11 +11,28 @@ const exec = promisify(execFile);
 const root = fileURLToPath(new URL('../', import.meta.url));
 export const NOTA_MODEL = 'deepseek-flash';
 export const NOTA_MODEL_NAME = 'DeepSeek V4.1 Flash';
+const trialGateway = 'https://nota-agent-gateway.zhangzitao997.chatgpt.site/anthropic';
+function trialConnection(dir) {
+  const folder = join(dir, 'credentials');
+  mkdirSync(folder, { recursive: true, mode: 0o700 });
+  const file = join(folder, 'trial-token');
+  if (!existsSync(file)) {
+    const token = 'nota-trial-v1-' + randomBytes(32).toString('hex');
+    const staged = join(folder, '.trial-' + randomBytes(12).toString('hex'));
+    writeFileSync(staged, token, { mode: 0o600, flag: 'wx' });
+    try { linkSync(staged, file); }
+    catch (error) { if (error.code !== 'EEXIST') throw error; }
+    finally { unlinkSync(staged); }
+  }
+  const token = readFileSync(file, 'utf8').trim();
+  if (!/^nota-trial-v1-[a-f0-9]{64}$/.test(token)) throw Error('Nota Agent 本机试用凭据损坏');
+  return { baseURL: trialGateway, token, serviceToken: '' };
+}
 export async function builtinConnection(dir) {
   let config = {};
   try { config = JSON.parse(readFileSync(join(dir, 'agent-gateway.json'), 'utf8')); } catch {}
   const value = process.env.NOTA_AGENT_GATEWAY_URL || config.url;
-  if (!value) return null;
+  if (!value) return trialConnection(dir);
   const url = new URL(value);
   const local = ['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname);
   if (url.protocol !== 'https:' && !(url.protocol === 'http:' && local)) throw Error('Nota Agent 网关必须使用 HTTPS');

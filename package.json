@@ -1,6 +1,6 @@
 {
   "name": "paper-reading-workbench",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Nota · 把论文读懂，把思考留下",
   "main": "dist-electron/main.js",
   "scripts": {
@@ -47,7 +47,8 @@
     "mac": {
       "target": "dmg",
       "icon": "public/assets/nota-macos-icon.png"
-    }
+    },
+    "afterPack": "./scripts/complete-packaged-dependencies.cjs"
   },
   "engines": {
     "node": ">=22"

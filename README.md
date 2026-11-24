@@ -16,11 +16,11 @@
 
 在「设置 → Agent」里可以选择本机的 Codex、Claude Code 或 WorkBuddy。Codex 和 Claude Code 使用本机登录的账号，WorkBuddy 使用已配置的自定义模型。未安装的 Agent 旁有官方安装指引。
 
-Nota 也内置了基于 DeepSeek Harness 的 Nota Agent，服务需要单独开通。**当前 0.2.1 安装包缺少一项运行依赖，使用此版本请先选用上述本机 Agent。**
+首次打开默认使用内置 Nota Agent，选中论文原句就能提问，无需登录或安装其他助手。当前提供限额试用，额度用完后可以切换到本机 Agent。
 
 ## 安装与数据
 
-- **支持的 Mac**：目前提供 Apple 芯片版。0.2.1 是尚未获得 Apple 公证的测试版，macOS 可能阻止首次打开。[查看发布记录](https://github.com/zhangzitaooo/nota/releases)
+- **支持的 Mac**：目前提供 Apple 芯片版。0.2.2 是尚未获得 Apple 公证的测试版，macOS 可能阻止首次打开。[查看发布记录](https://github.com/zhangzitaooo/nota/releases)
 - **论文和笔记**：论文库、译文、批注和阅读位置保存在这台 Mac 上。导入时 PDF 会上传至 OXR 解析服务。翻译或提问时，所选 Agent 会处理相应的论文内容。
 
 [从源码运行及开发说明](docs/development.md)
