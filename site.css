@@ -12,18 +12,20 @@ a {color:inherit;text-decoration:none}
 button {font:inherit;color:inherit;cursor:pointer;border:0}
 a:focus-visible, button:focus-visible {outline:3px solid #336a98;outline-offset:4px}
 main, .top, footer {width:min(88%, 1390px);margin-inline:auto}
-.top, footer, nav, .brand, .get-links {display:flex;align-items:center}
-.top, footer {justify-content:space-between}
-.top {min-height:82px;position:relative}
+footer, nav, .brand, .get-links {display:flex;align-items:center}
+footer {justify-content:space-between}
+.top {display:grid;grid-template-columns:1fr auto 1fr;align-items:center;min-height:82px}
+.top .brand {justify-self:start}
+.top > .primary {justify-self:end;font-size:14px;white-space:nowrap}
 .brand {font:700 32px/1 Georgia, serif;letter-spacing:-.07em;gap:5px}
 .brand img {width:36px;height:36px}
 nav {gap:26px;font-size:14px}
 nav a:hover, .source-stage header a:hover, .get-links a:not(.primary):hover {text-decoration:underline;text-underline-offset:4px}
-.top nav a:last-child, .primary {
+.primary {
   display:inline-flex;align-items:center;justify-content:center;gap:.7em;
   background:#202422;color:white;border-radius:100px;padding:9px 18px;font-weight:550;
 }
-.primary:hover, .top nav a:last-child:hover {background:#39443e;text-decoration:none}
+.primary:hover {background:#39443e;text-decoration:none}
 .hero {
   padding:clamp(64px,8.5vw,148px) 0 clamp(68px,7.2vw,116px);
   text-align:center;
@@ -117,7 +119,7 @@ footer nav img {width:22px;height:22px}
 }
 @media(max-width:600px) {
   main,.top,footer {width:calc(100% - 28px)}
-  .top {min-height:60px}
+  .top {display:flex;justify-content:space-between;min-height:60px}
   .desktop-link {display:none}
   nav {gap:15px}
   .hero {padding:68px 0 60px}
@@ -145,5 +147,7 @@ footer nav img {width:22px;height:22px}
   .primary,button {transition:background-color .16s ease,color .16s ease}
 }
 @media(max-width:355px) {
+  .top .brand {font-size:26px}
+  .top > .primary {padding-inline:12px}
   .translation .demo-toolbar {align-items:flex-start;flex-direction:column;gap:6px}
 }
