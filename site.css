@@ -78,7 +78,7 @@ button[aria-pressed=false]:hover {background:#ffffff85}
 .cases .feature {display:grid;grid-template-columns:minmax(225px,.8fr) minmax(0,1.2fr);gap:7%;align-items:start}
 .feature-copy {padding-top:8px}
 h2 {font-size:clamp(30px,3vw,48px);line-height:1.2;letter-spacing:-.055em}
-.feature-copy p, .get p {color:var(--muted);font-size:16px;line-height:1.85;margin-top:16px;max-width:26em}
+.feature-copy p {color:var(--muted);font-size:16px;line-height:1.85;margin-top:16px;max-width:26em}
 .reading, .agents {padding:clamp(23px,3.2vw,50px)}
 .reading {background:radial-gradient(ellipse at 15% 30%,#fbf0cd,transparent 62%),#efe9dd}
 .reading .demo-toolbar {margin-bottom:24px}
@@ -102,7 +102,6 @@ h2 {font-size:clamp(30px,3vw,48px);line-height:1.2;letter-spacing:-.055em}
 .agent-detail h3 {font-size:21px}
 .agent-detail small {display:block;margin-top:12px}
 .get {background:#f4f5f0;border-radius:23px;padding:clamp(25px,4vw,60px);display:flex;align-items:center;justify-content:space-between;gap:28px}
-.get p {max-width:none}
 .get-links {gap:19px;font-size:14px;flex-shrink:0}
 footer {padding-block:34px}
 footer .brand {font-size:25px}
