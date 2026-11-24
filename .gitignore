@@ -7,3 +7,9 @@ npm-cache/
 *.tsbuildinfo
 .env*
 !.env.example
+
+.venv/
+.verification/
+*.key
+agent-gateway.json
+nota-agent-access*.json

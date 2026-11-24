@@ -1,274 +1,160 @@
-import { app, BrowserWindow, ipcMain, dialog } from 'electron';
-import * as path from 'path';
-import { ProjectStore } from './services/project-store';
-import { PdfParser } from './services/pdf-parser';
-import { DeepSeekClient } from './services/deepseek-client';
-import { Translator } from './services/translator';
-import { PdfExporter } from './services/pdf-exporter';
-import { LlmHarness } from './services/llm-harness';
-import { DialogueManager } from './services/dialogue-manager';
-import { ToolCallingHarness } from './services/tool-calling-harness';
-import { ToolRegistry } from './services/tools/tool-registry';
-import { WebSearchTool } from './services/tools/web-search-tool';
+import { app, BrowserWindow, shell, dialog } from "electron";
+import { spawn, ChildProcess } from "child_process";
+import * as path from "path";
 
-let mainWindow: BrowserWindow | null = null;
-let projectStore: ProjectStore;
-let pdfParser: PdfParser;
-let deepseekClient: DeepSeekClient;
-let translator: Translator;
-let pdfExporter: PdfExporter;
-let dialogueManager: DialogueManager;
+let service: ChildProcess | null = null;
+let window: BrowserWindow | null = null;
+let address = "";
+let quitting = false;
+app.setName("Nota");
+const locked = app.requestSingleInstanceLock();
+if (!locked) app.quit();
+app.on("second-instance", () => {
+  window?.show();
+  window?.focus();
+});
 
-type ConsoleMethod = 'log' | 'error' | 'warn' | 'info';
-
-function isBrokenPipeError(error: unknown): boolean {
-  return Boolean(
-    error &&
-      typeof error === 'object' &&
-      'code' in error &&
-      (error as NodeJS.ErrnoException).code === 'EPIPE'
-  );
-}
-
-function installSafeConsole() {
-  const methods: ConsoleMethod[] = ['log', 'error', 'warn', 'info'];
-
-  for (const method of methods) {
-    const original = console[method].bind(console);
-    console[method] = ((...args: unknown[]) => {
-      try {
-        original(...args);
-      } catch (error) {
-        if (!isBrokenPipeError(error)) {
-          throw error;
-        }
-      }
-    }) as Console[ConsoleMethod];
+function openWindow() {
+  if (window) {
+    window.show();
+    return;
   }
-
-  const ignoreBrokenPipe = (error: NodeJS.ErrnoException) => {
-    if (!isBrokenPipeError(error)) {
-      return;
-    }
-  };
-
-  process.stdout.on('error', ignoreBrokenPipe);
-  process.stderr.on('error', ignoreBrokenPipe);
-}
-
-installSafeConsole();
-
-function createWindow() {
-  mainWindow = new BrowserWindow({
+  window = new BrowserWindow({
     width: 1400,
-    height: 900,
-    minWidth: 1000,
-    minHeight: 700,
-    title: '论文精读工作台',
+    height: 940,
+    minWidth: 900,
+    minHeight: 650,
+    title: "Nota",
+    backgroundColor: "#ffffff",
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      sandbox: true,
     },
   });
-
-  mainWindow.webContents.on('console-message', (_event, level, message, line, sourceId) => {
-    console.log(`[renderer:${level}] ${message} (${sourceId}:${line})`);
-  });
-
-  mainWindow.webContents.on('render-process-gone', (_event, details) => {
-    console.error('[renderer:gone]', details);
-  });
-
-  mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
-    console.error(`[renderer:load-failed] ${errorCode} ${errorDescription} ${validatedURL}`);
-  });
-
-  if (process.env.VITE_DEV_SERVER_URL) {
-    mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
-    mainWindow.webContents.openDevTools();
-  } else {
-    mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
-  }
-}
-
-function assertStringArg(value: unknown, name: string): asserts value is string {
-  if (typeof value !== 'string' || value.length === 0) {
-    throw new Error(`Invalid ${name}`);
-  }
-}
-
-function assertArrayArg<T = unknown>(value: unknown, name: string): asserts value is T[] {
-  if (!Array.isArray(value)) {
-    throw new Error(`Invalid ${name}`);
-  }
-}
-
-app.whenReady().then(() => {
-  projectStore = new ProjectStore();
-  pdfParser = new PdfParser();
-  deepseekClient = new DeepSeekClient();
-  translator = new Translator(deepseekClient);
-  pdfExporter = new PdfExporter(projectStore, () => mainWindow);
-  const llmHarness = new LlmHarness();
-  const toolRegistry = new ToolRegistry();
-  toolRegistry.register(new WebSearchTool());
-  const toolCallingHarness = new ToolCallingHarness(llmHarness, deepseekClient, toolRegistry);
-  dialogueManager = new DialogueManager(toolCallingHarness);
-
-  createWindow();
-  registerIpcHandlers();
-
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
-  });
-});
-
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
-});
-
-function registerIpcHandlers() {
-  // ========== 文件导入 ==========
-  ipcMain.handle('import-pdf', async () => {
-    const result = await dialog.showOpenDialog(mainWindow!, {
-      title: '选择英文论文 PDF',
-      filters: [{ name: 'PDF 文件', extensions: ['pdf'] }],
-      properties: ['openFile'],
-    });
-    if (result.canceled || result.filePaths.length === 0) return null;
-    return result.filePaths[0];
-  });
-
-  // ========== 项目操作 ==========
-  ipcMain.handle('create-project', async (_event, pdfPath: unknown) => {
-    assertStringArg(pdfPath, 'pdfPath');
-    return projectStore.createProject(pdfPath);
-  });
-
-  ipcMain.handle('load-project', async (_event, projectId: unknown) => {
-    assertStringArg(projectId, 'projectId');
-    return projectStore.loadProject(projectId);
-  });
-
-  ipcMain.handle('list-projects', async () => {
-    return projectStore.listProjects();
-  });
-
-  ipcMain.handle('delete-project', async (_event, projectId: unknown) => {
-    assertStringArg(projectId, 'projectId');
-    return projectStore.deleteProject(projectId);
-  });
-
-  // ========== PDF 解析 ==========
-  ipcMain.handle('parse-pdf', async (_event, pdfPath: unknown, projectId?: unknown) => {
-    assertStringArg(pdfPath, 'pdfPath');
-    if (projectId !== undefined) {
-      assertStringArg(projectId, 'projectId');
-    }
-    const assetDir = projectId ? projectStore.getAssetsDir(projectId) : undefined;
-    return pdfParser.parse(pdfPath, assetDir);
-  });
-
-  ipcMain.handle('load-asset-data-url', async (_event, projectId: unknown, assetPath: unknown) => {
-    assertStringArg(projectId, 'projectId');
-    assertStringArg(assetPath, 'assetPath');
-    return projectStore.readAssetDataUrl(projectId, assetPath);
-  });
-
-  ipcMain.handle('export-pdf', async (_event, projectId: unknown) => {
-    assertStringArg(projectId, 'projectId');
-    return pdfExporter.exportProjectToPdf(projectId);
-  });
-
-  // ========== 翻译 ==========
-  ipcMain.handle('translate-blocks', async (_event, projectId: unknown, blocks: unknown) => {
-    assertStringArg(projectId, 'projectId');
-    assertArrayArg<any>(blocks, 'blocks');
-    let currentBlocks = [...blocks];
-    const onProgress = (blockId: string, status: string, zh?: string, error?: string) => {
-      currentBlocks = currentBlocks.map((block) =>
-        block.id === blockId
-          ? {
-              ...block,
-              status,
-              zh: zh ?? block.zh,
-              error,
-            }
-          : block
-      );
-
-      try {
-        const currentDocument = projectStore.loadDocument(projectId);
-        if (currentDocument) {
-          projectStore.saveDocument(projectId, {
-            ...currentDocument,
-            blocks: currentBlocks,
-            paper: {
-              ...currentDocument.paper,
-              updatedAt: new Date().toISOString(),
-            },
-          });
-        }
-      } catch (saveError) {
-        console.error('[translation:save-progress-failed]', saveError);
-      }
-
-      mainWindow?.webContents.send('translation-progress', {
-        projectId,
-        blockId,
-        status,
-        zh,
-        error,
+  window.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith(address + "/papers/") && url.endsWith("/original.pdf")) {
+      const pdf = new BrowserWindow({
+        width: 950,
+        height: 900,
+        parent: window!,
+        webPreferences: {
+          sandbox: true,
+          contextIsolation: true,
+          nodeIntegration: false,
+        },
       });
-    };
-
-    const translatedBlocks = await translator.translateAll(blocks, onProgress);
-    return translatedBlocks;
+      void pdf.loadURL(url);
+    } else if (/^https:\/\//.test(url) || url === "mailto:zhangzitao997@gmail.com") {
+      void shell.openExternal(url);
+    }
+    return { action: "deny" };
   });
-
-  ipcMain.handle('retry-translate-block', async (_event, block: any) => {
-    return translator.translateBlock(block);
+  window.webContents.on("will-navigate", (event, url) => {
+    if (!url.startsWith(address + "/")) event.preventDefault();
   });
-
-  // ========== Document 读写 ==========
-  ipcMain.handle('save-document', async (_event, projectId: unknown, document: any) => {
-    assertStringArg(projectId, 'projectId');
-    return projectStore.saveDocument(projectId, document);
+  window.on("close", (event) => {
+    if (!quitting) {
+      event.preventDefault();
+      app.quit();
+    }
   });
-
-  ipcMain.handle('load-document', async (_event, projectId: unknown) => {
-    assertStringArg(projectId, 'projectId');
-    return projectStore.loadDocument(projectId);
+  window.on("closed", () => {
+    window = null;
   });
+  void window.loadURL(address);
+}
 
-  // ========== Annotations 读写 ==========
-  ipcMain.handle('save-annotations', async (_event, projectId: unknown, annotations: unknown) => {
-    assertStringArg(projectId, 'projectId');
-    assertArrayArg(annotations, 'annotations');
-    return projectStore.saveAnnotations(projectId, annotations);
+async function startService() {
+  const root = app.getAppPath();
+  const node = process.env.PAPER_NODE_BIN || path.join(root, "node_modules/node/bin", process.platform === "win32" ? "node.exe" : "node");
+  const env: NodeJS.ProcessEnv = {
+    ...process.env,
+    PORT: "0",
+    PATH: [process.env.PATH, "/opt/homebrew/bin", "/usr/local/bin"]
+      .filter(Boolean)
+      .join(path.delimiter),
+  };
+  delete env["ELECTRON_RUN_AS_NODE"];
+  service = spawn(node, [path.join(root, "server/server.mjs")], {
+    cwd: root,
+    env,
+    stdio: ["ignore", "pipe", "pipe", "ipc"],
   });
-
-  ipcMain.handle('load-annotations', async (_event, projectId: unknown) => {
-    assertStringArg(projectId, 'projectId');
-    return projectStore.loadAnnotations(projectId);
+  let stderr = "";
+  service.stderr?.on("data", (b) => {
+    stderr = (stderr + String(b)).slice(-3000);
   });
-
-  // ========== Chat 读写 ==========
-  ipcMain.handle('save-chats', async (_event, projectId: unknown, chats: unknown) => {
-    assertStringArg(projectId, 'projectId');
-    assertArrayArg(chats, 'chats');
-    return projectStore.saveChats(projectId, chats);
+  await new Promise<void>((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(Error("Local service did not start within 15 seconds")),
+      15000,
+    );
+    service!.once("error", (e) => {
+      clearTimeout(timer);
+      reject(e);
+    });
+    service!.once("exit", (code) => {
+      clearTimeout(timer);
+      reject(Error(stderr || `Local service exited (${code})`));
+    });
+    service!.on("message", (message: any) => {
+      if (message?.type === "ready") {
+        clearTimeout(timer);
+        address = `http://127.0.0.1:${message.port}`;
+        console.log(address);
+        resolve();
+      }
+    });
   });
-
-  ipcMain.handle('load-chats', async (_event, projectId: unknown) => {
-    assertStringArg(projectId, 'projectId');
-    return projectStore.loadChats(projectId);
-  });
-
-  // ========== AI Chat ==========
-  ipcMain.handle('chat-ask', async (_event, context: any) => {
-    const answer = await dialogueManager.answer(context);
-    return answer.content;
+  service.on("exit", () => {
+    if (!quitting) {
+      void dialog.showMessageBox({
+        type: "error",
+        message: "Local reading service stopped",
+        detail: stderr || "Restart the app to resume saved work.",
+      });
+    }
   });
 }
+if (locked)
+  app.whenReady().then(async () => {
+    try {
+      app.dock?.setIcon(path.join(app.getAppPath(), "dist/assets/nota-macos-icon.png"));
+      await startService();
+      openWindow();
+    } catch (e) {
+      dialog.showErrorBox(
+        "Unable to start workbench",
+        String(e) + "\n请检查依赖安装，或运行 npm run setup:pdf。",
+      );
+      app.quit();
+    }
+  });
+app.on("activate", () => {
+  if (address) openWindow();
+});
+app.on("window-all-closed", () => app.quit());
+app.on("before-quit", (event) => {
+  if (quitting || !service || service.exitCode !== null) return;
+  event.preventDefault();
+  quitting = true;
+  void (async () => {
+    try {
+      await Promise.race([
+        window?.webContents.executeJavaScript(
+          "window.persistReadingPosition?.()",
+        ),
+        new Promise((resolve) => setTimeout(resolve, 1500)),
+      ]);
+    } catch (e) {
+      console.warn("Reading position flush:", String(e));
+    }
+    service!.once("exit", () => app.quit());
+    service!.kill("SIGTERM");
+    setTimeout(() => {
+      service?.kill("SIGKILL");
+      app.quit();
+    }, 2500).unref();
+  })();
+});

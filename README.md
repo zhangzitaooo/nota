@@ -1,137 +1,104 @@
-# 论文精读工作台
+# Nota
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Electron-28-47848F?logo=electron" alt="Electron">
-  <img src="https://img.shields.io/badge/React-18-61DAFB?logo=react" alt="React">
-  <img src="https://img.shields.io/badge/TypeScript-5.3-3178C6?logo=typescript" alt="TypeScript">
-  <img src="https://img.shields.io/badge/AI-DeepSeek-4D6BFE" alt="DeepSeek">
-  <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
-</p>
+把论文读懂，把思考留下
 
-> 一个面向英文论文的轻量精读工作台。导入 PDF → 自动翻译为中文 → 像读文章一样高亮加粗 → 选中段落直接追问 AI。全部在本地完成。
-
-## 产品截图
-
-![启动页](docs/screenshots/launch-page.png)
-
-![阅读 + 对话](docs/screenshots/reading-chat.png)
-
-![侧边栏展开](docs/screenshots/reading-sidebar-expanded.png)
-
----
-
-## 为什么做
-
-我英语一般，但我想读懂前沿 AI 论文。
-
-试过 ChatGPT 传 PDF、IMA 翻译、Notion 问文档，翻译完就完了——译文不能划线不能做笔记，选中段落问 AI 还得复制粘贴解释背景。我需要的是**把翻译后的文本当作可以操作的阅读层**，市面上没有一个刚好对胃口的。
-
-| 工具 | 能翻译 | 能问 AI | 能在译文上标注 |
-|------|:---:|:---:|:---:|
-| **IMA** | ✅ | ✅ | ❌ 译文只是渲染层 |
-| **Notion + PDF** | ❌ | ✅ | ❌ PDF 导入易乱 |
-| **ChatGPT / DeepSeek** | ❌ | ✅ | ❌ 问完还得回 PDF 阅读器标注 |
-| **这个工具** | ✅ | ✅ | ✅ 翻译 → 阅读 → 标注 → 提问，一站完成 |
-
----
-
-## 核心体验
-
-### 1. 译文是主内容
-
-打开论文后默认看到排版清晰的中文。英文原文作为隐藏上下文，AI 对话时自动携带——你不需要它占阅读空间，但 AI 需要它来保证回答质量。
-
-### 2. 标注发生在译文上
-
-选中文本即可**高亮**（标记"值得回看"）或**加粗**（标记"概念/方法重点"）。标注绑定到结构化文本块，不依赖 PDF 坐标，译文重排也不会漂移。
-
-### 3. 选区就是上下文
-
-选中任意段落，右侧 AI Chat 自动知道：
-
-- 你选中的中文译文
-- 对应英文原文
-- 所在章节标题
-- 论文标题
-
-**不用复制粘贴，不用解释背景。** 选中一段 CLIP 论文的方法描述，直接问"这段的贡献是什么"，AI 的回答会基于完整上下文。
-
-### 4. AI 不会乱编
-
-回答严格锚定在你选中的文本、论文内容和对话历史上。证据不足时直接告诉你不确定——不会用模型常识脑补作者信息、不会假装搜到了外部资料。
-
-整套策略通过版本化的 Markdown policy 文件定义（`llm/policies/`），包括证据优先级、不确定性表达、搜索触发条件、回答风格等规则，可读可改不用读代码。
-
----
+阅读优先的本机工作台。PDF 经 OXR 解析为图文，使用 Nota Agent、Codex、Claude Code 或 WorkBuddy 翻译、讨论。React 阅读界面，Electron 桌面窗口；同一界面也可在本机浏览器使用。
 
 ## 快速开始
 
-### 前置要求
+[下载 Nota 0.2.0 · macOS Apple Silicon](https://github.com/zhangzitaooo/paper-reading-workbench/releases/download/v0.2.0/Nota-0.2.0-macOS-arm64.dmg)。打开磁盘映像，将 Nota 拖入「应用程序」。此构建使用本地临时签名，未获 Apple 开发者签名或公证。
 
-- macOS（Apple Silicon / Intel）
-- Node.js 18+
-- [DeepSeek API Key](https://platform.deepseek.com/)
+首次启动默认选中 Nota Agent。使用内置服务需要单独开通，未授权时设置页显示「暂未开通」。也可以在设置中选择本机 Agent。未安装的 Codex、Claude Code 和 WorkBuddy 均提供「接入说明」。WorkBuddy 使用桌面应用中已配置的自定义模型。Antigravity CLI 已单独验证原生会话，目前仅在设置中检测安装状态。
 
-### 安装运行
+### 从源码启动
 
-```bash
-git clone https://github.com/zhangzitaooo/paper-reading-workbench.git
-cd paper-reading-workbench
-npm install
-echo "DEEPSEEK_API_KEY=你的API-Key" > .env.local
+需要 macOS、Node.js 22+、Python 3.9+。要使用外部 Agent，请另行配置上述任意一款已接入的 Agent。桌面服务和 DeepSeek Harness 使用随项目安装的 Node 24。Nota Agent 未配置共享服务时显示暂未开通。
+
+```sh
+npm ci
+npm run setup:pdf
+npm start
+```
+
+`setup:pdf` 只在项目 `.venv` 中安装固定版本 PyMuPDF，不改系统 Python。`npm start` 构建前端和 Electron，自动启动本机服务并打开桌面窗口。关闭应用会停止本机服务和 Codex 子进程，下次启动可继续。
+
+仅在浏览器运行：
+
+```sh
 npm run dev
+# http://127.0.0.1:43128/
 ```
 
-### 使用流程
+桌面和浏览器启动器不要同时使用同一数据目录。服务会阻止重复实例。桌面窗口使用动态本机端口；终端会显示地址。`npm run build` 后可用 `npm run start:web` 直接启动已构建版本。
 
-1. 打开应用 → 导入英文 PDF 论文
-2. 系统自动解析结构并逐段翻译为中文（进度实时可见）
-3. 在阅读区读译文，选中关键段落做高亮/加粗标注
-4. 选中不懂的段落 → 在右侧 Chat 直接提问
-5. 所有数据（标注、对话记录）自动保存在本地
+## 论文库首页
 
----
+- 首次进入空库显示 Agent 接入与导入引导。连接设置检测本机 Codex 是否安装、登录，再使用真实 App Server 建立连接；未就绪时提供安装/登录命令。可以先导入 PDF，不强制先连接 Agent。
+- 有论文时首页只显示标题与导入入口、继续阅读、最近论文，不展示阅读器顶栏。点击继续阅读恢复该论文的语言和原文位置；阅读器左上角“论文库”返回首页。
+- 解析中的论文立即进入最近论文列表，标题后以圆环显示解析或翻译进度；悬停、键盘聚焦或点击可查看状态。解析暂停/失败的继续与重试操作在圆环浮层中。完成后圆环消失。
+- 最近阅读时间从本版开始记录，旧记录没有时间戳时显示“—”。解析任务仍按单任务执行，解析中切换论文沿用原有互斥限制。
 
-## 技术栈
+## 阅读方式
 
-| 层 | 技术 |
-|----|------|
-| 桌面壳 | Electron |
-| 前端 | React 18 + TypeScript + Vite |
-| PDF 解析 | pdfjs-dist |
-| AI 服务 | DeepSeek API |
-| LLM 策略 | 三层引擎 + 版本化 Policy 文件（`llm/policies/`） |
-| 存储 | 本地 JSON（`~/Documents/PaperReadingWorkbench/`） |
+1. 导入 PDF，页码默认 `all`（全文），也支持 `1-3`、`1,3,7`。自动按每批最多 20 页、10MB 拆分，校验完整覆盖后合并。
+2. 点击“翻译全文”，使用设置中的默认 Agent 分批翻译。可以边翻译边读，切换中文、英文或中英对照。
+3. 整篇连续滚动，原页码导航随阅读位置更新；切换语言保留所在原文句段。正文保持舒适行宽。划选同一句段中的文字，会出现“问 Codex / 高亮 / 批注”。段落左侧也可引用整段或查看原 PDF。
+4. Agent 侧栏默认关闭，点击右上角或按 ⌘J 展开。拖动左边缘调宽，重开后仍保留宽度。回答悬停可复制，不自动存为批注。模型和推理强度在发送键左侧选择，从下一条消息生效；同一主题可切换 Agent，保留草稿、引用和历史，切回时恢复各自的原生会话。
+5. 点击划线或段落旁的标记，在浮层中查看批注，正文不被挤开；总批注列表可回跳中英原文。原 PDF 预览框出对应图文块。
+6. 阅读位置按原文块、句段和段内进度保存在本机，重开应用后点击首页“继续阅读”恢复语言与阅读位置（不依赖端口）。解析、翻译支持暂停和继续。讨论会话按论文保存，重新打开侧栏后可恢复同一个 Codex thread。
 
----
+## 数据和锚点
 
-## 项目结构
+新版数据在 `~/Documents/PaperReadingWorkbench/v2`；旧版 `projects/` 不自动迁移或改写。
 
+- `papers/<paperId>/`：原 PDF、OXR 结果、页图、图表、英文块、独立 `translation.json`。
+- `reading.json`：每篇论文的语言与原文阅读锚点；图片、字体或窗口变化后按锚点重新对齐。
+- `library-history.json`：每篇论文最后阅读时间，供首页排序使用。
+- `state.json`：当前论文、聊天、请求与批注；`projects/`：切换后各论文会话快照。
+- 英文原文不可变；中文选区记录译文版本、句段 ID 和中文偏移，并保存对应英文句段的原始偏移。
+- 中英是句段对齐，不是逐词对齐；PDF 定位精度为 OXR 图文块。模型只能提供批注内容，不能改变宿主已验证的锚点。
+- 公式通过 KaTeX 排版，原始字符串和偏移不变；选中公式的一部分会按整个表达式保存。英文批注在中文模式中标出对应句段，不声称逐词对齐。
+- 每批解析结果和译文及时落盘。恢复时复用已完成结果，未保存的翻译批次会重做。
+
+可显式复制独立原型的已解析论文，复用其译文；不会复制旧讨论 thread 或覆盖已有数据。建议服务关闭时执行：
+
+```sh
+node scripts/import-prototype.mjs /absolute/path/to/paper-id
 ```
-src/          # React 前端（阅读区、Chat、标注工具栏）
-electron/     # Electron 主进程（PDF 解析、翻译、AI 对话编排）
-llm/          # LLM 策略与 Prompt 模板（soul.md + policies/）
-sample/       # 测试用论文 PDF
-docs/         # 截图与设计文档
+
+可选环境变量：`PAPER_DATA_DIR`（独立数据目录）、`PAPER_PYTHON`、`CODEX_BIN`、`PAPER_NODE_BIN`（Electron 使用的 Node 路径）、`PORT`（浏览器模式，默认 43128）、`OXR_BASE_URL`（默认 OXR 免费 API）。不复制或记录 Codex 登录令牌。
+
+## 开发与验证
+
+```sh
+npm test
+npm run build
 ```
 
----
+`npm test` 包括前端/桌面类型检查、公式分词、锚点、阅读位置与 HTTP 持久化测试、Python 分批页数/大小/缺页测试。不会调用远程 OXR 或 Codex。
 
-## 路线图
+- `src/v2/`：论文库首页、Agent 接入引导、阅读器、选区工具条、原位批注、Agent 侧栏。
+- `server/server.mjs`：仅本机 HTTP/SSE、讨论会话、动态批注工具、项目切换。
+- `server/anchors.mjs`：统一校验中英文选区与版本。
+- `server/oxr.mjs` / `pdf_worker.py`：远程解析队列、本地切批、页码合并与图表裁切。
+- `server/translation.mjs`：独立 Codex 翻译会话，结构化结果，两个并发批次，每批最多 55 句段或约 1 万源字符。
+- `electron/main.ts`：桌面窗口、本机服务生命周期，隔离的 renderer，无 Node 暴露给前端。
 
-- [x] PDF 导入与结构化解析
-- [x] 逐段 AI 翻译为中文
-- [x] 译文高亮与加粗标注
-- [x] 选区驱动的 AI 对话（自动携带原文和章节上下文）
-- [x] 本地项目文件存储
-- [x] PDF 导出
-- [x] 多论文项目管理
-- [ ] 英文原文折叠查看
-- [ ] 标注列表与对话历史回看
-- [ ] Markdown / HTML 导出
+旧 `electron/services/`、`src/components/`、`src/domain/` 与 `llm/` 暂留作历史参考，当前运行入口不调用旧 DeepSeek 流程。旧测试可用 `npm run test:legacy`。
 
----
+## 当前边界
 
-## License
+0.2.0 提供 Apple Silicon 安装包。
 
-MIT
+- PDF 最多 30MB、500 页；单页压缩后超过 10MB 会明确失败。OXR 是远程服务，PDF 会上传；不是在 Mac 本地运行 OXR 模型。
+- 翻译和讨论使用所选 Agent 的模型服务。点击翻译才启动翻译任务，展开侧栏本身不会发消息。
+- 机器翻译只抽查；跨页断词、OCR 错字、参考文献碎片尚未修正。公式/代码/表格值保留原样，图内文字不翻译，LaTeX 支持行内和独立数学排版，不支持或损坏的表达式保留源码。
+- 已完成译文不会在恢复时改写；暂不提供重新翻译版本编辑。划选限制在单句段内。
+- 每轮讨论只发送问题、阅读位置和冻结选区。完整原文、译文、图表通过只读论文 MCP 工具按需读取。Bash 和网页能力使用原生运行时，越界操作在对话中申请一次性授权。跨 Agent 切换时只补齐必要的未见对话，不冒充共享原生会话。
+- 本版批注存在本地侧车数据中；尚未接回旧版 PDF 导出、旧项目数据迁移、删除/编辑批注或多人协作。
+
+MIT。OXR API/模型本身的服务条款和许可证独立于本仓库。
+
+## Nota Agent 服务
+
+固定使用 DeepSeek V4.1 Flash，界面显示「限时免费」，不提供 Pro 或用户 API Key 表单。共享 Key 只在独立网关保存；客户端持有可撤销、有期限和独立额度的访问令牌。网关限制模型、输出、并发、频率和每日用量，并支持 SSE 转发。已部署仅供当前本机使用的私有网关，并验证真实 Flash、工具调用、流式回答和会话恢复；其他安装需单独授权。云端使用 D1 事务维护额度并设置累计调用熔断。详见 [网关配置](docs/design/nota-agent-gateway.md)。
