@@ -43,6 +43,16 @@ export function AgentPanel({ state, anchors, onRemove, onUseAnchors, onState, on
   onResize: (update: () => void) => void;
 }) {
   const conversation = state.conversations.find(c => c.id === state.activeConversationId)!;
+  const [remaining, setRemaining] = useState<number | null>(null);
+  useEffect(() => {
+    if (conversation.provider !== 'builtin' || state.busy) return;
+    const controller = new AbortController();
+    fetch('/api/question-quota', {signal: controller.signal})
+      .then(async response => response.ok ? (await response.json()).remaining : null)
+      .then(value => { if (!controller.signal.aborted) setRemaining(Number.isInteger(value) ? value : null); })
+      .catch(() => { if (!controller.signal.aborted) setRemaining(null); });
+    return () => controller.abort();
+  }, [conversation.provider, state.busy]);
   const panelWidth = usePanelWidth();
   const scope = { paperId: state.paper.id, conversationId: conversation.id };
   const [error, setError] = useState("");
@@ -64,6 +74,7 @@ export function AgentPanel({ state, anchors, onRemove, onUseAnchors, onState, on
   const draft = useRef({ text: conversation.draft || "", excerpts, dirty: false });
   const draftTimer = useRef<ReturnType<typeof setTimeout>>();
   const historyRoot = useRef<HTMLDivElement>(null);
+  const quotaEmpty = conversation.provider === "builtin" && remaining === 0;
   const locked = state.busy || sending || changing || state.connection === "connecting";
   const visibleMessages = pendingMessage && !state.messages.some(m => m.id === pendingMessage.id)
     ? [...state.messages, pendingMessage] : state.messages;
@@ -131,7 +142,7 @@ export function AgentPanel({ state, anchors, onRemove, onUseAnchors, onState, on
     } catch (e) { fail(e as Error); }
   }
   async function send(input = question) {
-    if (!input.trim() || locked || inFlight.current) return;
+    if (!input.trim() || quotaEmpty || locked || inFlight.current) return;
     inFlight.current = true;
     const text = input.trim();
     const [anchor, ...extras] = anchors;
@@ -200,7 +211,7 @@ export function AgentPanel({ state, anchors, onRemove, onUseAnchors, onState, on
         <img className="welcome-agent-mark" alt="" src={`/assets/nota-agent-${conversation.provider}.png`} />
         <h2>{anchors.length ? `聊聊${subject}` : "聊聊这篇论文"}</h2>
         {!question.trim() && <div className="suggestions" aria-label="建议问题">{suggestions.map(q =>
-          <button key={q} type="button" disabled={locked} title={`发送：${q}`} onClick={() => void send(q)}>
+          <button key={q} type="button" disabled={locked || quotaEmpty} title={`发送：${q}`} onClick={() => void send(q)}>
             <span>{q}</span><Icon name="arrow" size={14} />
           </button>)}</div>}
       </div>}
@@ -283,7 +294,8 @@ export function AgentPanel({ state, anchors, onRemove, onUseAnchors, onState, on
         }} />
       <div className="composer-actions">
         <ModelPicker state={state} onState={onState} onSettings={onSettings} />
-        {state.busy ? <button className="send-button" type="button" title="停止回答" aria-label="停止回答" onClick={() => void run("stop")}><Icon name="stop" size={15} /></button> : <button className="send-button" title="Enter 发送，Shift+Enter 换行" aria-label="发送问题" disabled={!question.trim() || locked}><Icon name="arrow" size={18} /></button>}
+        {conversation.provider === 'builtin' && remaining !== null && <small className="question-balance">剩余 {remaining} 次免费提问</small>}
+        {state.busy ? <button className="send-button" type="button" title="停止回答" aria-label="停止回答" onClick={() => void run("stop")}><Icon name="stop" size={15} /></button> : <button className="send-button" title="Enter 发送，Shift+Enter 换行" aria-label="发送问题" disabled={!question.trim() || locked || quotaEmpty}><Icon name="arrow" size={18} /></button>}
       </div>
     </form>
   </aside>;

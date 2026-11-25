@@ -33,6 +33,7 @@ export default function Workbench() {
   const [agentSetup, setAgentSetup] = useState(false);
   const [opening, setOpening] = useState(false);
   const [panel, setPanel] = useState<"agent" | null>(null);
+  const [outlineCollapsed, setOutlineCollapsed] = useState(false);
   const [anchors, setAnchors] = useState<Anchor[]>([]);
   function addAnchor(anchor: Anchor) {
     const key = anchorKey(anchor);
@@ -429,8 +430,9 @@ export default function Workbench() {
             )}
           </div>
         ) : (
-          <div className={`reader-layout ${sections.length ? "with-outline" : ""}`}>
-            {sections.length > 0 && <ReaderOutline sections={sections} reader={reader} onJump={jumpSection} />}
+          <div data-outline-collapsed={outlineCollapsed} className={`reader-layout ${sections.length ? "with-outline" : ""}`}>
+            {sections.length > 0 && <ReaderOutline sections={sections} reader={reader} collapsed={outlineCollapsed}
+              onToggle={() => preserveLayout(() => setOutlineCollapsed(value => !value))} onJump={jumpSection} />}
           <div className={`document ${cardsByBlock.size ? "with-margin-notes" : ""}`} data-reading-mode={mode} style={{ "--reading-size": `${appearance.value.size}px`, "--reading-width": `${appearance.value.width}px`, "--reading-spacing": appearance.value.spacing } as CSSProperties}>
             <header className="document-header">
               {coverTitle ? renderBlock(firstBlock, "cover-title") : <h1>{paper.title}</h1>}
@@ -467,7 +469,7 @@ export default function Workbench() {
               </button>}
               <div className="reading-navigation">
               <ReadingAppearance value={appearance.value} onChange={next => preserveLayout(() => appearance.update(next))} />
-              {sections.length > 0 && <label className="section-picker">
+              {!panel && sections.length > 0 && <label className="section-picker">
                 <Icon name="menu" size={16} />目录
                 <select value="" aria-label="章节目录" onChange={e => {
                   jumpSection(e.target.value);

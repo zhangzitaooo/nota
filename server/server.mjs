@@ -1,3 +1,4 @@
+import {createQuestionQuota} from './question-quota.mjs';
 import {recordUsage,nativeUsage,gatewayUsage,readUsage,usageReport,recordCodexUsage,finishNativeUsage} from './usage.mjs';
 import {builtinConnection} from './agent-config.mjs';
 import {gatewayHeaders} from './nota-relay.mjs';
@@ -34,6 +35,7 @@ const root = dirname(fileURLToPath(import.meta.url));
 const dataDir =
   process.env.PAPER_DATA_DIR ||
   join(process.env.HOME, "Documents/PaperReadingWorkbench/v2");
+const questionQuota = createQuestionQuota(dataDir);
 const webDir = resolve(root, "../dist");
 const settingsPath = join(dataDir, "settings.json");
 const settings = existsSync(settingsPath) ? JSON.parse(readFileSync(settingsPath, "utf8")) : { defaultAgent: "builtin" };
@@ -473,6 +475,9 @@ async function ask(body) {
     body.question.length > 6000
   )
     throw Error("问题为空或过长");
+  if (body.clientMessageId && state.requests.some(r => r.requestId === body.clientMessageId))
+    throw Error("这条问题已发送");
+  let questionConnection, questionId;
   state.busy = true;
   broadcast();
   try {
@@ -546,9 +551,21 @@ async function ask(body) {
       endOffset: req.endOffset,
     });
     if (selectedProvider() === 'builtin') {
-      const run = await deepseekRuntime.run(text, state.threadId,{paperId:paper.id,purpose:'chat',operationId:req.requestId});
+      questionId = req.requestId;
+      questionConnection = await questionQuota.begin(questionId);
+      if (req.status === 'cancelled') throw Error('已停止回答');
+      const run = await deepseekRuntime.run(text, state.threadId,{paperId:paper.id,purpose:'chat',operationId:req.requestId, questionMeter:!!questionConnection});
       state.threadId = run.sessionId; req.turnId = req.requestId; state.activeTurn = req.turnId;
-      run.done.then(() => { req.status = 'completed'; recordAgentTurn(state); }).catch(e => { if (req.status !== 'cancelled') { req.status = 'failed'; state.error = e.message; } }).finally(() => {
+      run.done.then(() => {
+        if (req.status === 'cancelled') return;
+        const answered = state.messages.some(m => m.requestId === req.requestId && m.role === 'assistant' && m.phase === 'final_answer' && m.complete && m.text?.trim());
+        if (!answered) throw Error('Agent 未返回回答，请重试');
+        req.status = 'completed';
+        recordAgentTurn(state);
+      }).catch(e => {
+        if (req.status !== 'cancelled') { req.status = 'failed'; state.error = e.message; }
+      }).finally(async () => {
+        await questionQuota.finish(questionConnection, questionId, req.status === 'completed');
         state.busy = false; state.activeTurn = null; state.activity = null; approvals.cancel(); broadcast();
       });
       broadcast(); return { requestId: req.requestId, turnId: req.turnId };
@@ -597,6 +614,7 @@ async function ask(body) {
     broadcast();
     return { requestId: req.requestId, turnId: r.turn.id };
   } catch (e) {
+    await questionQuota.finish(questionConnection, questionId, false);
     state.busy = false;
     state.error = state.requests.at(-1)?.status === 'cancelled' ? null : e.message;
     const req = state.requests.findLast((r) => r.status === "running");
@@ -1002,6 +1020,8 @@ const server = http.createServer(async (req, res) => {
       broadcast();
       return json(201, n);
     }
+    if (req.method === "GET" && req.url === "/api/question-quota")
+      return json(200, await questionQuota.balance());
     if (req.method === "POST" && req.url === "/api/ask")
       return json(200, await ask(await bodyOf(req)));
     if (req.method === "POST" && req.url === "/api/disconnect") {

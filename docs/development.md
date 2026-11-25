@@ -78,7 +78,7 @@ npm run build
 
 ## 当前边界
 
-0.2.2 提供 Apple Silicon 安装包。
+0.2.3 提供 Apple Silicon 安装包。
 
 - PDF 最多 30MB、500 页；单页压缩后超过 10MB 会明确失败。OXR 是远程服务，PDF 会上传；不是在 Mac 本地运行 OXR 模型。
 - 翻译和讨论使用所选 Agent 的模型服务。点击翻译才启动翻译任务，展开侧栏本身不会发消息。

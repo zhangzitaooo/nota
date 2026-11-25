@@ -4,9 +4,11 @@ import { Icon } from "./Icon";
 
 type Section = { id: string; label: string; nested: boolean };
 
-export function ReaderOutline({ sections, reader, onJump }: {
+export function ReaderOutline({ sections, reader, collapsed, onToggle, onJump }: {
   sections: Section[];
   reader: RefObject<HTMLElement>;
+  collapsed: boolean;
+  onToggle: () => void;
   onJump: (id: string) => void;
 }) {
   const [active, setActive] = useState("");
@@ -43,10 +45,14 @@ export function ReaderOutline({ sections, reader, onJump }: {
     const y = item.offsetTop;
     if (y < container.scrollTop || y + item.offsetHeight > container.scrollTop + container.clientHeight)
       container.scrollTop = y - container.clientHeight / 2;
-  }, [active]);
+  }, [active, collapsed]);
   return <aside className="reader-outline">
-    <h2><Icon name="menu" size={15} />目录</h2>
-    <nav aria-label="章节目录" ref={nav}>{sections.map(s =>
+    <button type="button" className="outline-toggle" onClick={onToggle}
+      aria-expanded={!collapsed} aria-controls="reader-sections"
+      aria-label={collapsed ? "展开目录" : "收起目录"} title={collapsed ? "展开目录" : "收起目录"}>
+      <Icon name="menu" size={15} />{!collapsed && "目录"}
+    </button>
+    <nav id="reader-sections" hidden={collapsed} aria-label="章节目录" ref={nav}>{sections.map(s =>
       <button type="button" key={s.id} className={s.nested ? "subsection" : undefined}
         aria-current={s.id === active ? "location" : undefined} onClick={() => onJump(s.id)}>{s.label}</button>
     )}</nav>

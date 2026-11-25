@@ -7,7 +7,48 @@ import { join, resolve } from 'node:path';
 import { prepareEnvironment, turnContext, callPaperTool } from '../server/paper-environment.mjs';
 import { chooseConfig, builtinConnection } from '../server/agent-config.mjs';
 import { ApprovalBroker } from '../server/approval-broker.mjs';
+import { createQuestionQuota } from '../server/question-quota.mjs';
 import { DeepSeekRuntime } from '../server/deepseek.mjs';
+
+test('a lost settlement acknowledgement survives restart and charges an answer once', async t => {
+  const dir = mkdtempSync(join(tmpdir(), 'nota-question-retry-'));
+  const answers = new Set();
+  const actions = [];
+  let dropAcknowledgement = true;
+  const server = http.createServer((req, res) => {
+    const [, , id, action] = req.url.split('/');
+    if (action) actions.push(action);
+    if (action === 'answer') {
+      answers.add(id);
+      if (dropAcknowledgement) {
+        dropAcknowledgement = false;
+        res.destroy();
+        return;
+      }
+    }
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ remaining: 100 - answers.size }));
+  });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  t.after(async () => {
+    server.closeAllConnections();
+    await new Promise(resolve => server.close(resolve));
+    rmSync(dir, { recursive: true, force: true });
+  });
+  const tokenFile = join(dir, 'token');
+  writeFileSync(tokenFile, 'nota-trial-v1-' + 'a'.repeat(64));
+  writeFileSync(join(dir, 'agent-gateway.json'), JSON.stringify({ url: 'http://127.0.0.1:' + server.address().port, tokenFile }));
+  const quota = createQuestionQuota(dir);
+  const cancelled = await quota.begin('first');
+  await quota.finish(cancelled, 'first', false);
+  assert.equal((await quota.balance()).remaining, 100);
+  const completed = await quota.begin('second');
+  await quota.finish(completed, 'second', true);
+  const restarted = createQuestionQuota(dir);
+  assert.equal((await restarted.balance()).remaining, 99);
+  assert.equal((await restarted.balance()).remaining, 99);
+  assert.deepEqual(actions, ['begin', 'cancel', 'begin', 'answer', 'answer']);
+});
 
 test('fresh installations have independent, persistent public trial credentials', async (t) => {
   const dir = mkdtempSync(join(tmpdir(), 'nota-trial-test-'));

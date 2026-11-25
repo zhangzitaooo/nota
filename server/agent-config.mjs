@@ -11,7 +11,7 @@ const exec = promisify(execFile);
 const root = fileURLToPath(new URL('../', import.meta.url));
 export const NOTA_MODEL = 'deepseek-flash';
 export const NOTA_MODEL_NAME = 'DeepSeek V4.1 Flash';
-const trialGateway = 'https://nota-agent-gateway.zhangzitao997.chatgpt.site/anthropic';
+export const trialGateway = 'https://nota-agent-gateway.zhangzitao997.chatgpt.site/anthropic';
 function trialConnection(dir) {
   const folder = join(dir, 'credentials');
   mkdirSync(folder, { recursive: true, mode: 0o700 });

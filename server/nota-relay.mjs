@@ -41,7 +41,7 @@ export function localGatewayConnection(id, readConnection, {context = () => ({})
           payload = Buffer.concat(chunks);
         }
         meta={...context()};
-        const attribution=payload?{'x-nota-purpose':meta.purpose||'other',...(meta.paperId?{'x-nota-paper-id':meta.paperId}:{}),...(meta.operationId?{'x-nota-operation-id':meta.operationId}:{})}:{};
+        const attribution=payload?{...(meta.questionMeter?{'x-nota-question-meter':'1'}:{}),'x-nota-purpose':meta.purpose||'other',...(meta.paperId?{'x-nota-paper-id':meta.paperId}:{}),...(meta.operationId?{'x-nota-operation-id':meta.operationId}:{})}:{};
         const upstream = await fetch(connection.baseURL + req.url, { method: req.method, redirect: 'error', headers: { ...gatewayHeaders(connection), ...attribution, ...(payload ? { 'Content-Type': 'application/json' } : {}) }, body: payload, signal: abort.signal });
         const requestId=upstream.headers.get('x-nota-request-id');
         if(requestId&&/^[a-f0-9-]{36}$/.test(requestId)){receipt=requestId;await Promise.resolve().then(()=>onUsage({id:receipt,paper_id:meta.paperId,purpose:meta.purpose,operation_id:meta.operationId,status:'reserved',created_at:Date.now()})).catch(()=>{});}
